@@ -21,7 +21,7 @@ repositories {
     maven("https://mvn-repo.arim.space/lesser-gpl3/")
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven ("https://repo.tcoded.com/releases")
-    maven ("https://repo.minebench.de/")
+    maven("https://repo.minebench.de/")
 }
 
 dependencies {
@@ -52,8 +52,6 @@ dependencies {
 
     // Libs
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
-
-    implementation("de.themoep:minedown-adventure:1.7.5")
 
     compileOnly("net.luckperms:api:5.5")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
