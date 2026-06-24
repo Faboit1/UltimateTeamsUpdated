@@ -571,13 +571,7 @@ public class MineDownParser {
             }
 
             if (defLowerCase.startsWith(PAYLOAD_PREFIX)) {
-                payloadBinaryData = BinaryTagHolder.binaryTagHolder(getValue(i, definition.substring(PAYLOAD_PREFIX.length()), defParts, true));
-                if (clickEvent.payload() instanceof ClickEvent.Payload.Custom) {
-                    clickEvent = ClickEvent.clickEvent(
-                            clickEvent.action(),
-                            ClickEvent.Payload.custom(((ClickEvent.Payload.Custom) clickEvent.payload()).key(), payloadBinaryData)
-                    );
-                }
+                // Ignore payload modifications since ClickEvent uses simple strings now
                 continue;
             }
 
@@ -652,17 +646,7 @@ public class MineDownParser {
                 if (autoAddUrlPrefix() && clickAction == ClickEvent.Action.OPEN_URL && !valueStr.startsWith("http://") && !valueStr.startsWith("https://")) {
                     valueStr = "http://" + valueStr;
                 }
-                ClickEvent.Payload payload;
-                if (clickAction.payloadType().isAssignableFrom(ClickEvent.Payload.Text.class)) {
-                    payload = ClickEvent.Payload.string(valueStr);
-                } else if (clickAction.payloadType().isAssignableFrom(ClickEvent.Payload.Int.class)) {
-                    payload = ClickEvent.Payload.integer(Integer.parseInt(valueStr));
-                } else if (clickAction.payloadType().isAssignableFrom(ClickEvent.Payload.Custom.class)) {
-                    payload = ClickEvent.Payload.custom(Key.key(valueStr), payloadBinaryData != null ? payloadBinaryData : BinaryTagHolder.binaryTagHolder(""));
-                } else {
-                    throw new IllegalArgumentException("Payload type " + clickAction.payloadType().getSimpleName() + " of action " + clickAction + " is not supported yet!");
-                }
-                clickEvent = ClickEvent.clickEvent(clickAction, payload);
+                clickEvent = ClickEvent.clickEvent(clickAction, valueStr);
             } else if (hoverAction == null) {
                 hoverAction = HoverEvent.Action.SHOW_TEXT;
             }
@@ -730,12 +714,7 @@ public class MineDownParser {
         }
 
         if (clickEvent != null && hoverEvent == null) {
-            String payloadDescription = "";
-            if (clickEvent.payload() instanceof ClickEvent.Payload.Text) {
-                payloadDescription = " " + ((ClickEvent.Payload.Text) clickEvent.payload()).value();
-            } else if (clickEvent.payload() instanceof ClickEvent.Payload.Int) {
-                payloadDescription = " " + ((ClickEvent.Payload.Int) clickEvent.payload()).integer();
-            }
+            String payloadDescription = " " + clickEvent.value();
             hoverEvent = HoverEvent.showText(Component.text()
                     .append(Component.text(clickEvent.action().toString().toLowerCase(Locale.ROOT).replace('_', ' ')))
                     .color(NamedTextColor.BLUE)

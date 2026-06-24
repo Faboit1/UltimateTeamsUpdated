@@ -219,19 +219,10 @@ public class MineDownStringifier {
             }
             if (clickEvent != null) {
                 if (preferSimpleEvents() && clickEvent.action() == ClickEvent.Action.OPEN_URL) {
-                    definitions.add(((ClickEvent.Payload.Text) clickEvent.payload()).value());
+                    definitions.add(clickEvent.value());
                 } else {
                     String payloadDef = clickEvent.action().toString().toLowerCase(Locale.ROOT);
-                    ClickEvent.Payload payload = clickEvent.payload();
-                    if (payload instanceof ClickEvent.Payload.Text) {
-                        payloadDef += "=" + ((ClickEvent.Payload.Text) payload).value();
-                    } else if (payload instanceof ClickEvent.Payload.Int) {
-                        payloadDef += "=" + ((ClickEvent.Payload.Int) payload).integer();
-                    } else if (payload instanceof ClickEvent.Payload.Custom) {
-                        ClickEvent.Payload.Custom custom = (ClickEvent.Payload.Custom) payload;
-                        payloadDef += "=" + custom.key().asMinimalString()
-                                + (custom.nbt().string().isEmpty() ? "" : " " + MineDown.PAYLOAD_PREFIX + custom.nbt().string());
-                    }
+                    payloadDef += "=" + clickEvent.value();
                     definitions.add(payloadDef);
                 }
             }
