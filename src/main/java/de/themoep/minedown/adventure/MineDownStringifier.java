@@ -24,22 +24,17 @@ package de.themoep.minedown.adventure;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ObjectComponent;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.object.ObjectContents;
-import net.kyori.adventure.text.object.PlayerHeadObjectContents;
-import net.kyori.adventure.text.object.SpriteObjectContents;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -127,7 +122,6 @@ public class MineDownStringifier {
         boolean hasEvent = (component.style().font() != null && component.style().font() != Style.DEFAULT_FONT)
                 || (component.shadowColor() != null && component.shadowColor().alpha() != 0)
                 || component instanceof TranslatableComponent || component.insertion() != null
-                || component instanceof ObjectComponent
                 || component.clickEvent() != clickEvent || component.hoverEvent() != hoverEvent;
         if (hasEvent) {
             sb.append('[');
@@ -168,69 +162,6 @@ public class MineDownStringifier {
                             .append(translatable.args().stream().map(this::stringify)
                                     .collect(Collectors.joining(",")))
                             .append("}").toString());
-                }
-            } else if (component instanceof ObjectComponent) {
-                if (((ObjectComponent) component).contents() instanceof PlayerHeadObjectContents) {
-                    PlayerHeadObjectContents playerHeadContents = (PlayerHeadObjectContents) ((ObjectComponent) component).contents();
-                    String defValue = null;
-                    if (playerHeadContents.id() != null) {
-                        defValue = playerHeadContents.id().toString();
-                    } else if (playerHeadContents.name() != null) {
-                        defValue = playerHeadContents.name();
-                    } else if (playerHeadContents.texture() != null) {
-                        defValue = playerHeadContents.texture().asMinimalString();
-                    } else if (!playerHeadContents.profileProperties().isEmpty()) {
-                        for (PlayerHeadObjectContents.ProfileProperty property : playerHeadContents.profileProperties()) {
-                            if ("textures".equals(property.name()) && property.signature() == null) {
-                                String decoded = new String(Base64.getDecoder().decode(property.value()));
-                                if (decoded.startsWith("{\"textures\"") && decoded.endsWith("}")) {
-                                    defValue = property.value();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (defValue == null) {
-                        defValue = "Unknown";
-                    }
-                    definitions.add(PLAYER_HEAD_PREFIX + defValue);
-
-                    if (!playerHeadContents.hat()) {
-                        definitions.add(HAT_PREFIX + "false");
-                    }
-
-                    if (playerHeadContents.texture() != null) {
-                        definitions.add(TEXTURE_PREFIX + playerHeadContents.texture());
-                    }
-
-                    if (!playerHeadContents.profileProperties().isEmpty()) {
-                        List<String> profileValues = new ArrayList<>();
-                        for (PlayerHeadObjectContents.ProfileProperty property : playerHeadContents.profileProperties()) {
-                            if (defValue.equals(property.value())) {
-                                continue;
-                            }
-                            String profileValue = property.name() + "=" + property.value();
-                            if (property.signature() != null) {
-                                profileValue += ",signature=" + property.signature();
-                            }
-                            profileValues.add(profileValue);
-                        }
-                        if (!profileValues.isEmpty()) {
-                            definitions.add(PROFILE_PREFIX + "{" + profileValues.stream().map(s -> {
-                                if (profileValues.size() == 1) {
-                                    return s;
-                                } else {
-                                    return "{" + s + "}";
-                                }
-                            }).collect(Collectors.joining(",")) + "}");
-                        }
-                    }
-                } else if (((ObjectComponent) component).contents() instanceof SpriteObjectContents) {
-                    SpriteObjectContents spriteContents = (SpriteObjectContents) ((ObjectComponent) component).contents();
-                    definitions.add(SPRITE_PREFIX + spriteContents.sprite().asMinimalString());
-                    if (!spriteContents.atlas().equals(SpriteObjectContents.DEFAULT_ATLAS)) {
-                        definitions.add(ATLAS_PREFIX + spriteContents.atlas().asMinimalString());
-                    }
                 }
             }
             if (colorInEventDefinition() && component.color() != null) {
@@ -347,10 +278,8 @@ public class MineDownStringifier {
             if (((TranslatableComponent) component).fallback() != null) {
                 sb.append(((TranslatableComponent) component).fallback());
             }
-        } else if (component instanceof ObjectComponent) {
-            // we don't add any text
         } else {
-            throw new UnsupportedOperationException("Cannot stringify " + component.getClass().getTypeName() + " yet! Only TextComponents, TranslatableComponent and ObjectComponents are supported right now. Sorry. :(");
+            throw new UnsupportedOperationException("Cannot stringify " + component.getClass().getTypeName() + " yet! Only TextComponents and TranslatableComponents are supported right now. Sorry. :(");
         }
     }
 

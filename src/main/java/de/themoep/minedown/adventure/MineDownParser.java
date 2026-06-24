@@ -34,8 +34,6 @@ import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextFormat;
-import net.kyori.adventure.text.object.ObjectContents;
-import net.kyori.adventure.text.object.PlayerHeadObjectContents;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -130,7 +128,7 @@ public class MineDownParser {
     private String font;
     private Key sprite;
     private Key atlas;
-    private PlayerHeadObjectContents.Builder playerHead;
+    private Object playerHead;
     private String insertion;
     private Integer rainbowPhase;
     private List<Map.Entry<TextColor, Boolean>> colors;
@@ -388,22 +386,6 @@ public class MineDownParser {
                     // translatable components can only have one color
                     builder.color(applicableColors.get(0));
                 }
-            } else if (playerHead() != null) {
-                builder = Component.object(playerHead().build()).toBuilder();
-            } else if (sprite() != null) {
-                if (atlas() == null) {
-                    if (sprite().value().startsWith("item/")) {
-                        builder = Component.object(ObjectContents.sprite(Key.key(sprite().namespace(), "items"), sprite())).toBuilder();
-                    } else{
-                        builder = Component.object(ObjectContents.sprite(sprite())).toBuilder();
-                    }
-                } else {
-                    builder = Component.object(ObjectContents.sprite(atlas(), sprite())).toBuilder();
-                }
-                if (!applicableColors.isEmpty()) {
-                    // object components can only have one color
-                    builder.color(applicableColors.get(0));
-                }
             } else {
                 builder = Component.text(value().toString()).toBuilder();
                 if (applicableColors.size() == 1) {
@@ -489,7 +471,7 @@ public class MineDownParser {
         String font = null;
         Key sprite = null;
         Key atlas = null;
-        PlayerHeadObjectContents.Builder playerHead = null;
+        Object playerHead = null;
         String insertion = null;
         BinaryTagHolder payloadBinaryData = null;
         Map<TextDecoration, Boolean> formats = new HashMap<>();
@@ -564,84 +546,22 @@ public class MineDownParser {
             }
 
             if (defLowerCase.startsWith(PLAYER_HEAD_PREFIX)) {
-                String playerHeadPart = definition.substring(PLAYER_HEAD_PREFIX.length());
-                if (playerHead == null) {
-                    playerHead = ObjectContents.playerHead();
-                }
-                if (playerHeadPart.length() == 36) {
-                    playerHead.id(UUID.fromString(playerHeadPart));
-                } else if (playerHeadPart.contains(":") || playerHeadPart.contains("/")) {
-                    playerHead.texture(Key.key(playerHeadPart));
-                } else if (playerHeadPart.length() <= 16) {
-                    playerHead.name(playerHeadPart);
-                } else {
-                    String decoded = new String(Base64.getDecoder().decode(playerHeadPart));
-                    if (decoded.startsWith("{\"textures\"") && decoded.endsWith("}")) {
-                        playerHead.profileProperty(PlayerHeadObjectContents.property("textures", playerHeadPart));
-                    } else if (!lenient()) {
-                        throw new IllegalArgumentException("Provided an invalid value for a player head in " + definition.substring(PLAYER_HEAD_PREFIX.length()));
-                    }
-                }
+                // ObjectComponent (player head display) requires Adventure 4.25.0+ - not supported on this server version
                 continue;
             }
 
             if (defLowerCase.startsWith(TEXTURE_PREFIX)) {
-                if (playerHead == null) {
-                    playerHead = ObjectContents.playerHead();
-                }
-                playerHead.texture(Key.key(definition.substring(TEXTURE_PREFIX.length())));
+                // ObjectComponent (player head display) requires Adventure 4.25.0+ - not supported on this server version
                 continue;
             }
 
             if (defLowerCase.startsWith(HAT_PREFIX)) {
-                if (playerHead == null) {
-                    playerHead = ObjectContents.playerHead();
-                }
-                playerHead.hat(Boolean.parseBoolean(definition.substring(HAT_PREFIX.length())));
+                // ObjectComponent (player head display) requires Adventure 4.25.0+ - not supported on this server version
                 continue;
             }
 
-            if (defLowerCase.startsWith(PROFILE_PREFIX) && playerHead != null) {
-                String valuePart = definition.substring(PROFILE_PREFIX.length());
-                if (!valuePart.startsWith("{") || !valuePart.endsWith("}")) {
-                    if (!lenient()) {
-                        throw new IllegalArgumentException("Profile information need to be wrapped in curly braces. '" + definition.substring(PROFILE_PREFIX.length()) + "' was not!");
-                    }
-                    continue;
-                }
-
-                if (playerHead == null) {
-                    playerHead = ObjectContents.playerHead();
-                }
-
-                if (valuePart.startsWith("{{") && valuePart.endsWith("}}")) {
-                    valuePart = valuePart.substring(1, valuePart.length() - 1);
-                }
-
-                String[] args = valuePart.substring(1, valuePart.length() - 1).split("},\\{");
-
-                for (String arg : args) {
-                    String name = null;
-                    String value = null;
-                    String signature = null;
-                    String[] argParts = arg.split(",");
-                    for (String part : argParts) {
-                        String[] keyValue = part.split("=");
-                        if (keyValue[0].equals("signature")) {
-                            signature = keyValue[1];
-                        } else {
-                            name = keyValue[0];
-                            value = keyValue[1];
-                        }
-                    }
-                    if (name != null && value != null) {
-                        if (signature != null) {
-                            playerHead.profileProperty(PlayerHeadObjectContents.property(name, value, signature));
-                        } else {
-                            playerHead.profileProperty(PlayerHeadObjectContents.property(name, value));
-                        }
-                    }
-                }
+            if (defLowerCase.startsWith(PROFILE_PREFIX)) {
+                // ObjectComponent (player head display) requires Adventure 4.25.0+ - not supported on this server version
                 continue;
             }
 
@@ -947,12 +867,12 @@ public class MineDownParser {
         return this.atlas;
     }
 
-    private MineDownParser playerHead(PlayerHeadObjectContents.Builder playerHead) {
+    private MineDownParser playerHead(Object playerHead) {
         this.playerHead = playerHead;
         return this;
     }
 
-    protected PlayerHeadObjectContents.Builder playerHead() {
+    protected Object playerHead() {
         return this.playerHead;
     }
 
