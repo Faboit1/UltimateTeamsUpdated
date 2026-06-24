@@ -1,3 +1,4 @@
+package de.themoep.minedown.adventure;
 
 /*
  * Copyright (c) 2020 Max Lee (https://github.com/Phoenix616)
