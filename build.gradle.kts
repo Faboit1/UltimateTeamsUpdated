@@ -21,6 +21,7 @@ repositories {
     maven("https://mvn-repo.arim.space/lesser-gpl3/")
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven ("https://repo.tcoded.com/releases")
+    maven("https://repo.minebench.de/")
 }
 
 dependencies {
